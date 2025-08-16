@@ -2,7 +2,6 @@
 pragma solidity ^0.8.13;
 
 import {IERC20} from "forge-std/interfaces/IERC20.sol";
-import {Test, console2} from "forge-std/Test.sol";
 
 interface ICurvePool {
     function exchange(
@@ -28,7 +27,7 @@ contract Router {
     error TransferFailed();
     
     function swapToPyUSD(uint256 amountIn, uint256 minAmountOut) external returns (uint256 amountOut) {
-        console2.log('in swap');
+    
         if (!USDC.transferFrom(msg.sender, address(this), amountIn)) {
             revert TransferFailed();
         }
@@ -36,8 +35,6 @@ contract Router {
         if (!USDC.approve(address(CURVE_POOL), amountIn)) {
             revert TransferFailed();
         }
-        
-        console2.log('before exchange');
 
         amountOut = CURVE_POOL.exchange(
             USDC_INDEX,

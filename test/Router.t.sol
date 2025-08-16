@@ -58,12 +58,12 @@ contract RouterTest is Test {
     
     function testSwapToPyUSDInsufficientOutput() public {
         uint256 amountIn = 100e6;
-        uint256 minAmountOut = 1000e18; // Unrealistic minimum
+        uint256 minAmountOut = 1000e6; // Unrealistic minimum
         
         vm.startPrank(user);
         USDC.approve(address(router), amountIn);
         
-        vm.expectRevert(Router.InsufficientOutput.selector);
+        vm.expectRevert("Exchange resulted in fewer coins than expected");
         router.swapToPyUSD(amountIn, minAmountOut);
         
         vm.stopPrank();
@@ -71,11 +71,11 @@ contract RouterTest is Test {
     
     function testSwapToPyUSDWithoutApproval() public {
         uint256 amountIn = 100e6;
-        uint256 minAmountOut = 99e18;
+        uint256 minAmountOut = 99e6;
         
         vm.startPrank(user);
         
-        vm.expectRevert(Router.TransferFailed.selector);
+        vm.expectRevert("ERC20: transfer amount exceeds allowance");
         router.swapToPyUSD(amountIn, minAmountOut);
         
         vm.stopPrank();
