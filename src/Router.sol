@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.21;
 
 import {IERC20} from "forge-std/interfaces/IERC20.sol";
 
@@ -26,7 +26,7 @@ contract Router {
     error InsufficientOutput();
     error TransferFailed();
     
-    function swapToPyUSD(uint256 amountIn, uint256 minAmountOut) external returns (uint256 amountOut) {
+    function swapToPyUSD(uint256 amountIn, uint256 minAmountOut, address recipient) external returns (uint256 amountOut) {
     
         if (!USDC.transferFrom(msg.sender, address(this), amountIn)) {
             revert TransferFailed();
@@ -41,12 +41,8 @@ contract Router {
             pyUSD_INDEX,
             amountIn,
             minAmountOut,
-            msg.sender
+            recipient
         );
-        
-        if (amountOut < minAmountOut) {
-            revert InsufficientOutput();
-        }
         
         return amountOut;
     }

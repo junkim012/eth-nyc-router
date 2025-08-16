@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.21;
 
 import {Test, console2} from "forge-std/Test.sol";
 import {Router} from "../src/Router.sol";
@@ -12,6 +12,7 @@ contract RouterTest is Test {
     IERC20 public constant pyUSD = IERC20(0x6c3ea9036406852006290770BEdFcAbA0e23A0e8);
     
     address public user = makeAddr("user");
+    address public recipient = makeAddr("recipient");
     uint256 public constant INITIAL_USDC = 1000e6; // 1000 USDC
     
     function setUp() public {
@@ -27,30 +28,28 @@ contract RouterTest is Test {
         uint256 amountIn = 100e6; // 100 USDC
         uint256 minAmountOut = 99e6; // Expect at least 99 pyUSD
 
-
         vm.startPrank(user);
         
         // Approve router to spend USDC
         USDC.approve(address(router), amountIn);
 
-        
         uint256 initialUSDCBalance = USDC.balanceOf(user);
-        uint256 initialPyUSDBalance = pyUSD.balanceOf(user);
+        uint256 initialRecipientPyUSDBalance = pyUSD.balanceOf(recipient);
 
         console2.log('initialUSDCBalance', initialUSDCBalance);
-        console2.log('initialPyUSDBalance', initialPyUSDBalance);
+        console2.log('initialRecipientPyUSDBalance', initialRecipientPyUSDBalance);
         
         // Perform swap
-        uint256 amountOut = router.swapToPyUSD(amountIn, minAmountOut);
+        uint256 amountOut = router.swapToPyUSD(amountIn, minAmountOut, recipient);
 
         console2.log('amountOut', amountOut);
         
         uint256 finalUSDCBalance = USDC.balanceOf(user);
-        uint256 finalPyUSDBalance = pyUSD.balanceOf(user);
+        uint256 finalRecipientPyUSDBalance = pyUSD.balanceOf(recipient);
         
         // Assertions
         assertEq(finalUSDCBalance, initialUSDCBalance - amountIn, "USDC not deducted correctly");
-        assertEq(finalPyUSDBalance, initialPyUSDBalance + amountOut, "pyUSD not received correctly");
+        assertEq(finalRecipientPyUSDBalance, initialRecipientPyUSDBalance + amountOut, "pyUSD not received by recipient");
         assertGe(amountOut, minAmountOut, "Output less than minimum");
         
         vm.stopPrank();
@@ -64,7 +63,7 @@ contract RouterTest is Test {
         USDC.approve(address(router), amountIn);
         
         vm.expectRevert("Exchange resulted in fewer coins than expected");
-        router.swapToPyUSD(amountIn, minAmountOut);
+        router.swapToPyUSD(amountIn, minAmountOut, recipient);
         
         vm.stopPrank();
     }
@@ -76,7 +75,7 @@ contract RouterTest is Test {
         vm.startPrank(user);
         
         vm.expectRevert("ERC20: transfer amount exceeds allowance");
-        router.swapToPyUSD(amountIn, minAmountOut);
+        router.swapToPyUSD(amountIn, minAmountOut, recipient);
         
         vm.stopPrank();
     }
